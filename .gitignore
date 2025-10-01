@@ -1,0 +1,33 @@
+# Python virtual environment
+venv/
+ENV/
+env/
+
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# FastAPI logs or runtime files
+*.log
+*.sqlite3
+*.db
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# IDE/editor configs
+.vscode/
+.idea/
+*.swp
+
+# dotenv files
+.env
+.env.*
+
+# Test coverage and profiling
+.coverage
+htmlcov/
+.cache/
+.pytest_cache/
