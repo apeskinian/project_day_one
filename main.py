@@ -26,5 +26,8 @@ class LightCommand(BaseModel):
 
 @app.post("/light")
 def light_building(command: LightCommand):
-    compile_command(command.model_dump())
-    return {'status': 'sent', 'command': command}
+    try:
+        compile_command(command.model_dump())
+        return {'status': 'Success'}
+    except Exception as error:
+        return {'status': f'Error: {error}'}

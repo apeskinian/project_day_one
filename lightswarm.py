@@ -1,10 +1,10 @@
-import serial
+# import serial
 from functools import reduce
 
-baud = 115200
-usb_port = '/dev/ttyUSB0'
-timeout = 1
-lightswarm = None
+# baud = 115200
+# usb_port = '/dev/ttyUSB0'
+# timeout = 1
+# lightswarm = None
 # lightswarm = serial.Serial(usb_port, baud, timeout)
 
 
@@ -41,7 +41,7 @@ def get_command_code(action):
 
 def check_value(input, action, bracket=None):
     if input is None:
-        raise ValueError('Action: "{action}" is missing a required value')
+        raise ValueError(f'Action: "{action}" is missing a required value')
     if not isinstance(input, int):
         raise TypeError(f'Value for "{action}" must be an integer.')
     if bracket:
@@ -51,7 +51,7 @@ def check_value(input, action, bracket=None):
             if not (bracket[0] <= input <= bracket[1]):
                 raise ValueError(
                     f'Error in setting value for "{action}"'
-                    f'Value must be between {range[0]}-{range[1]}.'
+                    f'Value must be between {bracket[0]}-{bracket[1]}.'
                 )
         else:
             if not (bracket[0] < input):
@@ -125,28 +125,28 @@ def build_payload(byte_array):
         else:
             payload.append(byte)
     payload.append(END)
-    print(bytes(payload))
     send_payload(payload)
 
 
 def send_payload(payload):
-    global lightswarm
-    try:
-        # Reconnect if lost
-        if not lightswarm or not lightswarm.is_open:
-            lightswarm = serial.Serial(usb_port, baud, timeout)
-            print('INFO: reconnected to lightswarm.')
-        # Send payload
-        lightswarm.write(bytes(payload))
-        print('Sending command to lightswarm.')
-    except serial.SerialException as error:
-        print(f'ERROR: Serial error: {error}')
-        try:
-            if lightswarm and lightswarm.is_open:
-                lightswarm.close()
-        except serial.SerialException:
-            pass
-        lightswarm = None
-    except Exception as error:
-        print(f'ERROR: Unexpected error: {error}')
-        raise
+    print(f'Sending payload of "{payload}" to USB port...')
+    # global lightswarm
+    # try:
+    #     # Reconnect if lost
+    #     if not lightswarm or not lightswarm.is_open:
+    #         lightswarm = serial.Serial(usb_port, baud, timeout)
+    #         print('INFO: reconnected to lightswarm.')
+    #     # Send payload
+    #     lightswarm.write(bytes(payload))
+    #     print('Sending command to lightswarm.')
+    # except serial.SerialException as error:
+    #     print(f'ERROR: Serial error: {error}')
+    #     try:
+    #         if lightswarm and lightswarm.is_open:
+    #             lightswarm.close()
+    #     except serial.SerialException:
+    #         pass
+    #     lightswarm = None
+    # except Exception as error:
+    #     print(f'ERROR: Unexpected error: {error}')
+    #     raise
