@@ -16,6 +16,7 @@ app.add_middleware(
 
 
 class LightCommand(BaseModel):
+    name: str
     channels: list
     action: str
     level: int | None = None

@@ -91,6 +91,7 @@ def get_extra_payload_data(command):
 
 def compile_command(command):
     for channel in command['channels']:
+        print(f'Turning {command["name"]} {command["action"]}')
         byte_array = []
         # Split light address into 1 byte blocks
         first_address_byte = (channel >> 8) & 0xFF
