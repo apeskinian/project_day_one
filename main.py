@@ -16,7 +16,7 @@ app.add_middleware(
 
 
 class LightCommand(BaseModel):
-    address: int
+    channels: list
     action: str
     level: int | None = None
     interval: int | None = None
@@ -24,7 +24,7 @@ class LightCommand(BaseModel):
     pseudo_address: int | None = None
 
 
-@app.post("/light")
+@app.post("/lightswarm")
 def light_building(command: LightCommand):
     try:
         compile_command(command.model_dump())

@@ -90,22 +90,25 @@ def get_extra_payload_data(command):
 
 
 def compile_command(command):
-    byte_array = []
-    # Split light address into 1 byte blocks
-    first_address_byte = (command['address'] >> 8) & 0xFF
-    second_address_byte = command['address'] & 0xFF
-    # Create command as 1 byte block
-    command_byte = get_command_code(command['action'])
-    # Check for custom command data to add
-    extra_payload_data = get_extra_payload_data(command)
-    # Build byte_array
-    byte_array.extend([first_address_byte, second_address_byte, command_byte])
-    byte_array.extend(extra_payload_data)
-    # Calculate checksum
-    checksum_byte = reduce(lambda x, y: x ^ y, byte_array)
-    byte_array.append(checksum_byte)
-    # Build payload
-    build_payload(byte_array)
+    for channel in command['channels']:
+        byte_array = []
+        # Split light address into 1 byte blocks
+        first_address_byte = (channel >> 8) & 0xFF
+        second_address_byte = channel & 0xFF
+        # Create command as 1 byte block
+        command_byte = get_command_code(command['action'])
+        # Check for custom command data to add
+        extra_payload_data = get_extra_payload_data(command)
+        # Build byte_array
+        byte_array.extend(
+            [first_address_byte, second_address_byte, command_byte]
+        )
+        byte_array.extend(extra_payload_data)
+        # Calculate checksum
+        checksum_byte = reduce(lambda x, y: x ^ y, byte_array)
+        byte_array.append(checksum_byte)
+        # Build payload
+        build_payload(byte_array)
 
 
 def build_payload(byte_array):
@@ -129,7 +132,7 @@ def build_payload(byte_array):
 
 
 def send_payload(payload):
-    print(f'Sending payload of "{payload}" to USB port...')
+    print(f'Sending payload of "{bytes(payload)}" to USB port...')
     # global lightswarm
     # try:
     #     # Reconnect if lost
