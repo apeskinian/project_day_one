@@ -1,6 +1,8 @@
 from fastapi import FastAPI
-from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+
+from lightswarm import compile_command
 
 app = FastAPI()
 
@@ -13,17 +15,16 @@ app.add_middleware(
 )
 
 
-class Building(BaseModel):
-    id: str
-    isLit: bool
+class LightCommand(BaseModel):
+    address: int
+    action: str
+    level: int | None = None
+    interval: int | None = None
+    step: int | None = None
+    pseudo_address: int | None = None
 
 
 @app.post("/light")
-def light_building(building: Building):
-    print(building.isLit)
-    if building.isLit is True:
-        print(f'Lighting building {building.id}')
-        return {'isLit': True, 'id': building.id}
-    else:
-        print(f'Turning off building {building.id}')
-        return {'isLit': False, 'id': building.id}
+def light_building(command: LightCommand):
+    compile_command(command.model_dump())
+    return {'status': 'sent', 'command': command}
