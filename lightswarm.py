@@ -14,11 +14,11 @@ def get_command_code(action):
         'reset': 0x01,
         'ping_request': 0x02,
         'ping_response': 0x03,
-        'on': 0x20,
-        'off': 0x21,
-        'level': 0x22,
-        'fade': 0x23,
-        'set_pseudo': 0x25,
+        'on': 0x20,  # implemented
+        'off': 0x21,  # implemented
+        'level': 0x22,  # implemented
+        'fade': 0x23,  # implemented
+        'set_pseudo': 0x25,  # implemented
         'erase_pseudo': 0x26,
         'media_function': 0x27,
         'event_start': 0x28,
@@ -45,19 +45,13 @@ def check_value(input, action, bracket=None):
     if not isinstance(input, int):
         raise TypeError(f'Value for "{action}" must be an integer.')
     if bracket:
-        if len(bracket) > 2:
-            raise ValueError('Value bracket has too many limits.')
+        if len(bracket) != 2:
+            raise ValueError('Value bracket needs exactly 2 values.')
         if len(bracket) == 2:
             if not (bracket[0] <= input <= bracket[1]):
                 raise ValueError(
-                    f'Error in setting value for "{action}"'
-                    f'Value must be between {bracket[0]}-{bracket[1]}.'
-                )
-        else:
-            if not (bracket[0] < input):
-                raise ValueError(
-                    f'Error in setting value for "{action}"'
-                    'Value must be more than 0'
+                    f'Value for "{action}" must be between '
+                    f'{bracket[0]}-{bracket[1]}. Value entered: {input}.'
                 )
     return input
 
@@ -75,7 +69,7 @@ def get_extra_payload_data(command):
         fade_interval = command.get('interval')
         fade_step = command.get('step')
         extra_payload_data.append(check_value(fade_level, action, [0, 255]))
-        extra_payload_data.append(check_value(fade_interval, action, [0]))
+        extra_payload_data.append(check_value(fade_interval, action, [1, 255]))
         extra_payload_data.append(check_value(fade_step, action, [0, 255]))
     # Applying pseudo address
     if action == 'set_pseudo':
@@ -91,7 +85,7 @@ def get_extra_payload_data(command):
 
 def compile_command(command):
     for channel in command['channels']:
-        print(f'Turning {command["name"]} {command["action"]}')
+        print(f'Executing {command["action"]} for {command["name"]}...')
         byte_array = []
         # Split light address into 1 byte blocks
         first_address_byte = (channel >> 8) & 0xFF
