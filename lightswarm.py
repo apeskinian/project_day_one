@@ -19,19 +19,19 @@ def get_command_code(action):
         'level': 0x22,  # implemented
         'fade': 0x23,  # implemented
         'set_pseudo': 0x25,  # implemented
-        'erase_pseudo': 0x26,
-        'media_function': 0x27,
-        'event_start': 0x28,
-        'event_stop': 0x29,
-        'data_forward': 0x2A,
-        'mech_command': 0x2B,
-        'set_rgb': 0x2C,
+        # 'erase_pseudo': 0x26,
+        # 'media_function': 0x27,
+        # 'event_start': 0x28,
+        # 'event_stop': 0x29,
+        # 'data_forward': 0x2A,
+        # 'mech_command': 0x2B,
+        # 'set_rgb': 0x2C,
         'toggle': 0x2D,
-        'flash': 0x2E,
-        'flash_rgb': 0x2F,
-        'fade_multi': 0x30,
-        'fade_rgb': 0x31,
-        'config': 0x7E
+        # 'flash': 0x2E,
+        # 'flash_rgb': 0x2F,
+        # 'fade_multi': 0x30,
+        # 'fade_rgb': 0x31,
+        # 'config': 0x7E
     }
     try:
         return codes[action]
@@ -83,7 +83,7 @@ def get_extra_payload_data(command):
     return extra_payload_data
 
 
-def compile_command(command):
+def lightswarm_command(command):
     for channel in command['channels']:
         print(f'Executing {command["action"]} for {command["name"]}...')
         byte_array = []
