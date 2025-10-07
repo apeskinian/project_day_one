@@ -1,11 +1,10 @@
-# import serial
-# import json
+import serial
+import json
 
 # Set up ledstrip serial interface
-# baud = 115200
-# usb_port = '/dev/TBC'
-# timeout = 1
-# ledstrip = serial.Serial(usb_port, baud, timeout)
+baud = 115200
+usb_port = '/dev/tty.usbmodem1101'
+ledstrip = serial.Serial(usb_port, baud)
 
 
 def get_command_code(colour):
@@ -39,24 +38,24 @@ def sk6812_command(command):
 
 
 def send_payload(payload):
-    print(f'Sending payload of "{payload}" to USB port...')
-    # global ledstrip
-    # try:
-    #     # Reconnect if lost
-    #     if not ledstrip or not ledstrip.is_open:
-    #         ledstrip = serial.Serial(usb_port, baud, timeout)
-    #         print('INFO: reconnected to leds.')
-    #     # Send payload
-    #     ledstrip.write((json.dumps(payload) + '\n').encode())
-    #     print('Sending command to leds.')
-    # except serial.SerialException as error:
-    #     print(f'ERROR: Serial error: {error}')
-    #     try:
-    #         if ledstrip and ledstrip.is_open:
-    #             ledstrip.close()
-    #     except serial.SerialException:
-    #         pass
-    #     ledstrip = None
-    # except Exception as error:
-    #     print(f'ERROR: Unexpected error: {error}')
-    #     raise
+    for cmd in payload:
+        print(f'Setting {cmd['index']} to {cmd['set']}')
+    global ledstrip
+    try:
+        # Reconnect if lost
+        if not ledstrip or not ledstrip.is_open:
+            ledstrip = serial.Serial(usb_port, baud)
+            print('INFO: reconnected to leds.')
+        # Send payload
+        ledstrip.write((json.dumps(payload) + '\n').encode())
+    except serial.SerialException as error:
+        print(f'ERROR: Serial error: {error}')
+        try:
+            if ledstrip and ledstrip.is_open:
+                ledstrip.close()
+        except serial.SerialException:
+            pass
+        ledstrip = None
+    except Exception as error:
+        print(f'ERROR: Unexpected error: {error}')
+        raise
