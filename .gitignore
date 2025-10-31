@@ -31,3 +31,6 @@ Thumbs.db
 htmlcov/
 .cache/
 .pytest_cache/
+
+# Static files
+static/

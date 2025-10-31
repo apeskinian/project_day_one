@@ -1,10 +1,19 @@
 import serial
 import json
+import platform
 
 # Set up ledstrip serial interface
 baud = 115200
-usb_port = '/dev/tty.usbmodem1101'
-ledstrip = serial.Serial(usb_port, baud)
+ledstrip = None
+
+
+def get_usb_port():
+    if platform.system() == 'Windows':
+        return 'COM4'
+    elif platform.system() == 'Darwin':
+        return '/dev/tty.usbmodem101'
+    else:
+        return '/dev/ttyUSB0'
 
 
 def get_command_code(colour):
@@ -44,7 +53,7 @@ def send_payload(payload):
     try:
         # Reconnect if lost
         if not ledstrip or not ledstrip.is_open:
-            ledstrip = serial.Serial(usb_port, baud)
+            ledstrip = serial.Serial(get_usb_port(), baud)
             print('INFO: reconnected to leds.')
         # Send payload
         ledstrip.write((json.dumps(payload) + '\n').encode())
