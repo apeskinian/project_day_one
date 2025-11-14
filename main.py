@@ -1,3 +1,4 @@
+# uvicorn main:app --host localhost --port 8000
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
@@ -23,12 +24,22 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Serve root files
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
 # Serve static assets (JS, CSS, images)
 app.mount("/assets", StaticFiles(directory="static/assets"), name="assets")
 
+# Serve hdri files for 3D model environment
+app.mount("/hdri", StaticFiles(directory="static/hdri"), name="hdri")
 
-# Serve root files
-app.mount("/static", StaticFiles(directory="static"), name="static")
+# Serve images for buildings
+app.mount("/images", StaticFiles(directory="static/images"), name="images")
+
+# Serve qr-codes
+app.mount(
+    "/qr-codes", StaticFiles(directory="static/qr-codes"), name="qr-codes"
+)
 
 
 # Serve index.html at root

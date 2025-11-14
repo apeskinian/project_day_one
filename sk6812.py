@@ -1,19 +1,24 @@
 import serial
 import json
 import platform
+import threading
 
 # Set up ledstrip serial interface
 baud = 115200
 ledstrip = None
+serial_lock = threading.Lock()
 
 
 def get_usb_port():
     if platform.system() == 'Windows':
         return 'COM4'
     elif platform.system() == 'Darwin':
-        return '/dev/tty.usbmodem101'
+        return '/dev/tty.usbmodem1101'
     else:
         return '/dev/ttyUSB0'
+
+
+ser = get_usb_port()
 
 
 def get_command_code(colour):
@@ -51,12 +56,13 @@ def send_payload(payload):
         print(f'Setting {cmd['index']} to {cmd['set']}')
     global ledstrip
     try:
-        # Reconnect if lost
-        if not ledstrip or not ledstrip.is_open:
-            ledstrip = serial.Serial(get_usb_port(), baud)
-            print('INFO: reconnected to leds.')
-        # Send payload
-        ledstrip.write((json.dumps(payload) + '\n').encode())
+        with serial_lock:
+            # Reconnect if lost
+            if not ledstrip or not ledstrip.is_open:
+                ledstrip = serial.Serial(ser, baud)
+                print('INFO: reconnected to leds.')
+            # Send payload
+            ledstrip.write((json.dumps(payload) + '\n').encode())
     except serial.SerialException as error:
         print(f'ERROR: Serial error: {error}')
         try:
