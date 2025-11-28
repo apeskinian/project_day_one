@@ -1,14 +1,59 @@
-# import serial
+"""
+Serial interface for controlling Lightswarm lighting devices.
+
+This module provides:
+- Automatic detection of the correct USB port based on platform.
+- Mapping of human-readable actions to Lightswarm command codes.
+- Validation helpers for command values.
+- Functions to build and send byte-encoded payloads with checksum and framing.
+- Thread-safe serial communication with automatic reconnection.
+"""
+
+# Standard imports:
+import serial
+import platform
+import threading
 from functools import reduce
 
-# baud = 115200
-# usb_port = '/dev/ttyUSB0'
-# timeout = 1
-# lightswarm = None
-# lightswarm = serial.Serial(usb_port, baud, timeout)
+# Serial configuration
+baud = 115200
+lightswarm = None
+serial_lock = threading.Lock()
+timeout = 1
+
+
+def get_usb_port():
+    """
+    Determine the appropriate USB port for the Lightswarm based on the host
+    platform. Check designated port on hardware and change as necessary.
+
+    Return examples:
+        str: The serial port path:
+        - 'COM4' for Windows
+        - '/dev/tty.usbmodem1101' for macOS
+        - '/dev/ttyUSB0' for Linux
+    """
+    if platform.system() == 'Windows':
+        return 'COM4'
+    elif platform.system() == 'Darwin':
+        return '/dev/tty.usbmodem1101'
+    else:
+        return '/dev/ttyUSB0'
+
+
+ser = get_usb_port()
 
 
 def get_command_code(action):
+    """
+    Map an action string to its corresponding Lightswarm command code.
+    Args:
+        action (str): Human-readable action name (e.g., 'on', 'off', 'fade').
+    Returns:
+        int: The command code as a single byte value.
+    Raises:
+        ValueError: If the provided action is not recognized.
+    """
     codes = {
         'nothing': 0x00,
         'reset': 0x01,
@@ -40,6 +85,18 @@ def get_command_code(action):
 
 
 def check_value(input, action, bracket=None):
+    """
+    Validate a numeric value for a given action.
+    Args:
+        input (int): The value to validate.
+        action (str): The action name for context in error messages.
+        bracket (list[int] | None): Optional [min, max] range for validation.
+    Returns:
+        int: The validated input value.
+    Raises:
+        ValueError: If the input is missing or outside the allowed range.
+        TypeError: If the input is not an integer.
+    """
     if input is None:
         raise ValueError(f'Action: "{action}" is missing a required value')
     if not isinstance(input, int):
@@ -57,6 +114,14 @@ def check_value(input, action, bracket=None):
 
 
 def get_extra_payload_data(command):
+    """
+    Build extra payload data depending on the action type.
+    Args:
+        command (dict): Command dictionary containing 'action' and optional
+        fields like 'level', 'interval', 'step', 'pseudo_address'.
+    Returns:
+        list[int]: Extra payload bytes to append to the command.
+    """
     action = command['action']
     extra_payload_data = []
     # Applying new level
@@ -84,8 +149,18 @@ def get_extra_payload_data(command):
 
 
 def lightswarm_command(command):
+    """
+    Construct and send a Lightswarm command for one or more channels.
+    Args:
+        command (dict): Command dictionary containing:
+            - 'channels' (list[int]): Target channel addresses.
+            - 'name' (str): Human-readable name for logging.
+            - 'action' (str): Action to perform.
+            - Optional fields depending on action (e.g., 'level', 'interval').
+    Side Effects:
+        Calls `build_payload()` to transmit.
+    """
     for channel in command['channels']:
-        print(f'Executing {command["action"]} for {command["name"]}...')
         byte_array = []
         # Split light address into 1 byte blocks
         first_address_byte = (channel >> 8) & 0xFF
@@ -107,6 +182,16 @@ def lightswarm_command(command):
 
 
 def build_payload(byte_array):
+    """
+    Apply framing and escaping to a byte array to build a valid Lightswarm
+    payload.
+    Args:
+        byte_array (list[int]): Raw command bytes including checksum.
+    Raises:
+        ValueError: If any byte is outside the 0–255 range.
+    Side Effects:
+        Calls `send_payload()` with the framed payload.
+    """
     END = 0xC0
     ESC = 0xDB
     END_ESC = 0xDC
@@ -127,24 +212,34 @@ def build_payload(byte_array):
 
 
 def send_payload(payload):
-    print(f'Sending payload of "{bytes(payload)}" to USB port...')
-    # global lightswarm
-    # try:
-    #     # Reconnect if lost
-    #     if not lightswarm or not lightswarm.is_open:
-    #         lightswarm = serial.Serial(usb_port, baud, timeout)
-    #         print('INFO: reconnected to lightswarm.')
-    #     # Send payload
-    #     lightswarm.write(bytes(payload))
-    #     print('Sending command to lightswarm.')
-    # except serial.SerialException as error:
-    #     print(f'ERROR: Serial error: {error}')
-    #     try:
-    #         if lightswarm and lightswarm.is_open:
-    #             lightswarm.close()
-    #     except serial.SerialException:
-    #         pass
-    #     lightswarm = None
-    # except Exception as error:
-    #     print(f'ERROR: Unexpected error: {error}')
-    #     raise
+    """
+    Send a payload to the Lightswarm device over serial.
+    Args:
+        payload (list[int]): Fully framed payload bytes.
+    Behavior:
+        - Ensures thread-safe access to the serial connection.
+        - Automatically reconnects if the serial connection is lost.
+        - Logs errors and resets the connection if needed.
+    Raises:
+        Exception: Re-raises unexpected errors after logging.
+    """
+    global lightswarm
+    try:
+        with serial_lock:
+            # Reconnect if lost
+            if not lightswarm or not lightswarm.is_open:
+                lightswarm = serial.Serial(ser, baud, timeout)
+                print('INFO: reconnected to lightswarm.')
+            # Send payload
+            lightswarm.write(bytes(payload))
+    except serial.SerialException as error:
+        print(f'ERROR: Serial error: {error}')
+        try:
+            if lightswarm and lightswarm.is_open:
+                lightswarm.close()
+        except serial.SerialException:
+            pass
+        lightswarm = None
+    except Exception as error:
+        print(f'ERROR: Unexpected error: {error}')
+        raise
