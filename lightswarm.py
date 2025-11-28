@@ -7,6 +7,8 @@ This module provides:
 - Validation helpers for command values.
 - Functions to build and send byte-encoded payloads with checksum and framing.
 - Thread-safe serial communication with automatic reconnection.
+
+- NOTE: CURRENTLY UNTESTED!!
 """
 
 # Standard imports:
