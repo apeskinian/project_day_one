@@ -1,5 +1,6 @@
 # Standard imports:
 import json
+import logging
 import sys
 # Third party imports:
 import neopixel  # type: ignore
@@ -17,6 +18,10 @@ pixels = neopixel.NeoPixel(
     auto_write=False
 )
 
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 
 def apply_json(data):
     """
@@ -28,8 +33,8 @@ def apply_json(data):
     - "set": a tuple/list of color values (e.g., (R, G, B) or (R, G, B, W))
 
     Example JSON inputs:
-        '{"index": 0, "set": [255, 0, 0]}`
-        `{"index": "all", "set": [0, 0, 255]}'
+        '[{"index": 0, "set": [255, 0, 0]}]`
+        `[{"index": "all", "set": [0, 0, 255]}]'
 
     Args:
         data (str): A JSON-encoded string containing LED commands.
@@ -49,7 +54,7 @@ def apply_json(data):
                 pixels[i] = (colour)
         pixels.show()
     except Exception as e:
-        print("Error:", e)
+        logger.error("Failed to apply JSON command: %s", e)
 
 
 def main() -> None:
