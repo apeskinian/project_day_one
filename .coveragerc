@@ -1,0 +1,13 @@
+[run]
+branch = True
+omit =
+    */tests/*
+    */test_*.py
+    */static/*
+    */venv/*
+    */__init__.py
+[report]
+exclude_lines =
+    # Don’t complain about infinite loops or entry points
+    pragma: no cover
+    if __name__ == .__main__.:

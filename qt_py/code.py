@@ -68,7 +68,7 @@ def main() -> None:
 
     This function runs indefinitely until the program is stopped.
     """
-    while True:
+    while True:  # pragma: no cover
         if supervisor.runtime.serial_bytes_available:
             line = sys.stdin.readline().strip()
             apply_json(line)
