@@ -13,6 +13,7 @@ This module provides:
 
 # Standard imports:
 import serial
+import logging
 import platform
 import threading
 from functools import reduce
@@ -22,6 +23,10 @@ baud = 115200
 lightswarm = None
 serial_lock = threading.Lock()
 timeout = 1
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 def get_usb_port():
@@ -106,12 +111,11 @@ def check_value(input, action, bracket=None):
     if bracket:
         if len(bracket) != 2:
             raise ValueError('Value bracket needs exactly 2 values.')
-        if len(bracket) == 2:
-            if not (bracket[0] <= input <= bracket[1]):
-                raise ValueError(
-                    f'Value for "{action}" must be between '
-                    f'{bracket[0]}-{bracket[1]}. Value entered: {input}.'
-                )
+        if not (bracket[0] <= input <= bracket[1]):
+            raise ValueError(
+                f'Value for "{action}" must be between '
+                f'{bracket[0]}-{bracket[1]}. Value entered: {input}.'
+            )
     return input
 
 
@@ -231,11 +235,11 @@ def send_payload(payload):
             # Reconnect if lost
             if not lightswarm or not lightswarm.is_open:
                 lightswarm = serial.Serial(ser, baud, timeout)
-                print('INFO: reconnected to lightswarm.')
+                logger.info('INFO: reconnected to lightswarm.')
             # Send payload
             lightswarm.write(bytes(payload))
     except serial.SerialException as error:
-        print(f'ERROR: Serial error: {error}')
+        logger.error(f'ERROR: Serial error: {error}')
         try:
             if lightswarm and lightswarm.is_open:
                 lightswarm.close()
@@ -243,5 +247,5 @@ def send_payload(payload):
             pass
         lightswarm = None
     except Exception as error:
-        print(f'ERROR: Unexpected error: {error}')
+        logger.error(f'ERROR: Unexpected error: {error}')
         raise
