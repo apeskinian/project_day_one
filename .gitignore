@@ -31,6 +31,7 @@ Thumbs.db
 htmlcov/
 .cache/
 .pytest_cache/
+flake8-report
 
 # Static files
 static/
