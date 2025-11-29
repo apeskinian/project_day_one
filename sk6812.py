@@ -9,6 +9,7 @@ This module provides:
 """
 # Standard imports:
 import json
+import logging
 import serial
 import platform
 import threading
@@ -17,6 +18,10 @@ import threading
 baud = 115200
 ledstrip = None
 serial_lock = threading.Lock()
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 def get_usb_port():
@@ -121,11 +126,11 @@ def send_payload(payload):
             # Reconnect if lost
             if not ledstrip or not ledstrip.is_open:
                 ledstrip = serial.Serial(ser, baud)
-                print('INFO: reconnected to leds.')
+                logger.info('INFO: reconnected to leds.')
             # Send payload
             ledstrip.write((json.dumps(payload) + '\n').encode())
     except serial.SerialException as error:
-        print(f'ERROR: Serial error: {error}')
+        logger.error(f'ERROR: Serial error: {error}')
         try:
             if ledstrip and ledstrip.is_open:
                 ledstrip.close()
@@ -133,5 +138,5 @@ def send_payload(payload):
             pass
         ledstrip = None
     except Exception as error:
-        print(f'ERROR: Unexpected error: {error}')
+        logger.error(f'ERROR: Unexpected error: {error}')
         raise

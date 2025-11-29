@@ -32,14 +32,15 @@ def test_serve_index(tmp_path, monkeypatch):
     - Monkeypatches `os.path.join` to point to the temp file.
     - Verifies that GET `/` returns a 200 response and contains the test HTML.
     """
+    # Arrange
     static_dir = tmp_path / 'static'
     static_dir.mkdir()
     index_file = static_dir / 'index.html'
     index_file.write_text('<html>Test</html>')
-
     monkeypatch.setattr(os.path, 'join', lambda *args: str(index_file))
-
+    # Act
     response = client.get('/')
+    # Assert
     assert response.status_code == 200
     assert 'Test' in response.text
 
@@ -54,6 +55,7 @@ def test_lightswarm_success(mock_command):
     - Verifies that the response is 200 and returns {'status': 'Success'}.
     - Ensures the mocked command was called once.
     """
+    # Arrange
     mock_command.return_value = None
     payload = {
         'name': 'test',
@@ -61,7 +63,9 @@ def test_lightswarm_success(mock_command):
         'action': 'on',
         'level': 50,
     }
+    # Act
     response = client.post('/lightswarm', json=payload)
+    # Assert
     assert response.status_code == 200
     assert response.json() == {'status': 'Success'}
     mock_command.assert_called_once()
@@ -77,6 +81,7 @@ def test_lightswarm_error(mock_command):
     - Verifies that the response is 200 and contains an
     'Error:' status message.
     """
+    # Arrange
     mock_command.side_effect = Exception('Hardware failure')
     payload = {
         'name': 'test',
@@ -84,7 +89,9 @@ def test_lightswarm_error(mock_command):
         'action': 'on',
         'level': 80,
     }
+    # Act
     response = client.post('/lightswarm', json=payload)
+    # Assert
     assert response.status_code == 200
     assert 'Error:' in response.json()['status']
 
@@ -99,6 +106,7 @@ def test_sk6812_success(mock_command):
     - Verifies that the response is 200 and returns {'status': 'Success'}.
     - Ensures the mocked command was called once.
     """
+    # Arrange
     mock_command.return_value = None
     payload = {
         'name': 'test',
@@ -107,7 +115,9 @@ def test_sk6812_success(mock_command):
         'brightness':  0.5,
         'effect': 'on',
     }
+    # Act
     response = client.post('/sk6812', json=payload)
+    # Assert
     assert response.status_code == 200
     assert response.json() == {'status': 'Success'}
     mock_command.assert_called_once()
@@ -123,6 +133,7 @@ def test_sk6812_error(mock_command):
     - Verifies that the response is 200 and contains an
     'Error:' status message.
     """
+    # Arrange
     mock_command.side_effect = Exception('Hardware failure')
     payload = {
         'name': 'test',
@@ -131,6 +142,8 @@ def test_sk6812_error(mock_command):
         'brightness':  0.5,
         'effect': 'on',
     }
+    # Act
     response = client.post('/sk6812', json=payload)
+    # Assert
     assert response.status_code == 200
     assert 'Error:' in response.json()['status']
