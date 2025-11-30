@@ -111,6 +111,7 @@ def check_value(input, action, bracket=None):
     if bracket:
         if len(bracket) != 2:
             raise ValueError('Value bracket needs exactly 2 values.')
+        bracket.sort()
         if not (bracket[0] <= input <= bracket[1]):
             raise ValueError(
                 f'Value for "{action}" must be between '

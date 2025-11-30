@@ -126,7 +126,18 @@ def test_check_value_with_valid_inputs_with_bracket():
     Verify that a valid integer within the bracket range is returned unchanged.
     """
     # Act
-    returnedValue = lightswarm.check_value(50, 'test', [0, 100])
+    returnedValue = lightswarm.check_value(50, 'test', [20, 100])
+    # Assert
+    assert returnedValue == 50
+
+
+def test_check_value_with_valid_inputs_with_reversed_bracket():
+    """
+    Verify that a valid integer within a unordered bracket range is returned
+    unchanged.
+    """
+    # Act
+    returnedValue = lightswarm.check_value(50, 'test', [75, 2])
     # Assert
     assert returnedValue == 50
 
